@@ -27,7 +27,9 @@ fi
 
 list=$(jq ".Groups[] | select(.GroupName == \"$1\") | .TestPoints[]" testcases/config.json)
 
-exename="code"
+exename="build/code"
+LOG_DIR="./logs"
+mkdir -p "$LOG_DIR"
 if [ ! -e "$exename" ]; then
   echo "Please compile the ticket system and place the executable at \"$exename\""
   exit 1
@@ -49,6 +51,7 @@ function tmpdir () {
   fi
 }
 
+
 testdir="$(tmpdir)"
 cp "$exename" "$testdir/"
 exe="$testdir/$exename"
@@ -64,7 +67,7 @@ for i in $list; do
   difffile="$(tmp)"
   if diff -ZB "$outfile" "$basedir/$i.out" > "$difffile"; then true; else
     cat "$difffile" | head -5
-    backup="test-$1-$i-$(date '+%s').log"
+    backup="${LOG_DIR}/test-$1-$i-$(date '+%s').log"
     cp "$outfile" "$cwd/$backup"
     echo "Test failed on input #$i."
     echo "Output saved to $backup"
