@@ -127,7 +127,7 @@ void add_train() {
 void delete_train() {
   std::string op = command.getstr();
   std::string id = command.getstr();
-  std::cout << train_sys.delete_train(id);
+  std::cout << train_sys.delete_train(id) << '\n';
 }
 void release_train() {
   std::string op = command.getstr();
@@ -225,7 +225,7 @@ void refund_ticket() {
       refund_num = StringToInt(command.getstr());
     }
   }
-  ticket_sys.refund_ticket(user, refund_num);
+  std::cout << ticket_sys.refund_ticket(user, refund_num) << '\n';
 }
 void clean() {
   user_sys.clean();
@@ -237,9 +237,10 @@ int main() {
   while (command.read()) {
     std::string timestamp = command.getstr();
     std::cout << timestamp << ' ';
-    int time = StringToInt(timestamp);
-    if (timestamp.size() > 6) return 0;
+    // int time = StringToInt(timestamp);
+    // if (timestamp.size() > 6) return 0;
     std::string op = command.getstr();
+    // std::cout << "op = " << op << '\n';
     if (op == "add_user") {
       add_user();
     } else if (op == "login") {

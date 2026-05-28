@@ -49,7 +49,7 @@ std::string IntToString(int x, int len = -1) {
     ans += ((x % 10) + '0');
     x /= 10;
   }
-  while (ans.size() < len) {
+  while (len != -1 && ans.size() < len) {
     ans += '0';
   }
   for (int i = 0, j = ans.size() - 1; i <= j; i++, j--) {
@@ -71,6 +71,8 @@ int DateToInt(const std::string &str) {
     ans += 30 + 31;
   } else if (str[2] == '9') {
     ans += 30 + 31 + 31;
+  } else if (str[1] != '6') {
+    return 114514;
   }
   return ans;
 }

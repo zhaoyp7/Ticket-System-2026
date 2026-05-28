@@ -36,6 +36,18 @@ struct Ticket {
     price = cost;
     ticket_num = nu;
   }
+  void debug() {
+    std::cout << "username = " << username << '\n';
+    std::cout << "trainID = " << trainID << '\n';
+    std::cout << "st_station = " << st_station << '\n';
+    std::cout << "ed_station = " << ed_station << '\n';
+    std::cout << "amount = " << amount << '\n';
+    std::cout << "price = " << price << '\n';
+    std::cout << "start_date = " << start_date << '\n';
+    std::cout << "arrival_time = " << arrival_time << '\n';
+    std::cout << "leaving_time = " << leaving_time << '\n';
+    std::cout << "ticket_num = " << ticket_num << '\n';
+  }
 };
 
 class TicketSystem {
@@ -87,6 +99,10 @@ public:
     int start_time = (train.startTime + time_first) % 1440;
     int station1 = 0, station2 = 0;
     int cost = train.calc_cost(st, ed);
+    if (start_date < train.saleDate_begin || start_date > train.saleDate_end) {
+      std::cout << "-1\n";
+      return;
+    }
     // std::cout << "time_first = " << time_first << '\n';
     // std::cout << "time_second = " << time_second << '\n';
     // std::cout << "delta_date = " << delta_date << '\n';
@@ -150,7 +166,7 @@ public:
     }
     sjtu::vector<int> ticket_pos = ticket_data_pos.find(Hash(user), INT_MIN);
     // TODO:
-    my::sort(ticket_pos);
+    my::sort(ticket_pos, std::greater<>());
     std::cout << ticket_pos.size() << '\n';
     for (int pos : ticket_pos) {
       Ticket ticket;
@@ -165,32 +181,30 @@ public:
       std::cout << ticket.trainID << ' ' << ticket.st_station << ' '
                 << FullTimeToString(ticket.leaving_time) << " -> "
                 << ticket.ed_station << ' '
-                << FullTimeToString(ticket.arrival_time) << ' ' << ticket.price
+                << FullTimeToString(ticket.arrival_time) << ' ' << ticket.price / ticket.amount
                 << ' ' << ticket.amount << '\n';
     }
   }
-  void refund_ticket(const std::string &user, int refund_num) {
+  int refund_ticket(const std::string &user, int refund_num) {
     sjtu::vector<int> tmp = user_sys.user_data_pos.find(Hash(user), INT_MIN);
     if (tmp.empty()) {
-      std::cout << "-1\n";
-      return;
+      return -1;
     } else if (user_sys.login_stack[Hash(user)] == 0) {
-      std::cout << "-1\n";
-      return;
-    }
+      return -1;
+    }    
     tmp = ticket_data_pos.find(Hash(user), INT_MIN);
+    // puts("find ticket");
     if (tmp.size() < refund_num) {
-      std::cout << "-1\n";
-      return;
+      return -1;
     }
     // TODO:
-    my::sort(tmp);
+    my::sort(tmp, std::greater<>());    
     int ticket_pos = tmp[refund_num - 1];
     Ticket ticket;
     ticket_data.read(ticket, ticket_pos);
+    // ticket.debug();
     if (ticket.status == TicketStatus::Refunded) {
-      std::cout << "-1\n";
-      return;
+      return -1;
     } else if (ticket.status == TicketStatus::Pending) {
       queue_pos.remove(Hash((std::string)ticket.trainID + "$" +
                             IntToString(ticket.start_date)),
@@ -198,8 +212,11 @@ public:
     }
     ticket.status = TicketStatus::Refunded;
     ticket_data.update(ticket, ticket_pos);
+    // std::cout << "hash = " << Hash(ticket.trainID) << '\n';
     Train train;
     int train_pos = train_sys.train_data_pos.find(Hash(ticket.trainID), INT_MIN)[0];
+    train_sys.train_data.read(train, train_pos);
+    // train.debug();
     int p = 0;
     while (p < train.stationNum && train.stations[p] != ticket.st_station) {
       p++;
@@ -208,10 +225,20 @@ public:
       train.seats[ticket.start_date][p] += ticket.amount;
       p++;
     }
-    sjtu::vector<int> pending_queue = queue_pos.find(Hash(
-        (std::string)ticket.trainID + "$" + IntToString(ticket.start_date)), INT_MIN);
+    // train.debug();
+    // puts("aaaaaaaaaaaaaaa");
+    // std::cout << "ticket.start_date = " << ticket.start_date << '\n';
+    // IntToString(ticket.start_date);
+    // exit(0);
+    // std::string strrrrr = (std::string)ticket.trainID + "$" + IntToString(ticket.start_date);
+    // std::cout << "strrrr = " << strrrrr << '\n';
+    // exit(0);
+    sjtu::vector<int> pending_queue = queue_pos.find(Hash((std::string)ticket.trainID + "$" + IntToString(ticket.start_date)), INT_MIN);
+    // puts("find pending queue");
+    // exit(0);
+
     // TODO:
-    my::sort(pending_queue, std::greater<>());
+    my::sort(pending_queue);
     for (int ticket_pos : pending_queue) {
       Ticket ticket;
       ticket_data.read(ticket, ticket_pos);
@@ -249,6 +276,7 @@ public:
           ticket_pos);
     }
     train_sys.train_data.update(train, train_pos);
+    return 0 ;
   }
   void clean() {
     count = 0;

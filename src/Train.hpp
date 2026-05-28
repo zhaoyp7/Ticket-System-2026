@@ -183,6 +183,7 @@ public:
     Train train;
     train_data.read(train, train_pos);
     // train.debug();
+    // std::cout << "hash = " << Hash(train.trainID) << '\n';
     if (train.is_released) {
       return -1;
     }
@@ -211,8 +212,12 @@ public:
     int train_pos = tmp[0];
     Train train;
     train_data.read(train, train_pos);
-    std::cout << train.trainID << ' ' << train.type << '\n';
     int date_int = DateToInt(date);
+    if (date_int <= 0 || date_int > 100) {
+      std::cout << "-1" << '\n';
+      return;      
+    }
+    std::cout << train.trainID << ' ' << train.type << '\n';
     int time = date_int * 24 * 60 + train.startTime;
     int total_price = 0;
     for (int i = 0; i < train.stationNum; i++) {
@@ -231,7 +236,7 @@ public:
       if (i == train.stationNum - 1) {
         std::cout << "x\n";
       } else {
-        std::cout << train.seats[date_int][i];
+        std::cout << train.seats[date_int][i] << '\n';
       }
       if (i != train.stationNum - 1) {
         time += train.travelTimes[i];
