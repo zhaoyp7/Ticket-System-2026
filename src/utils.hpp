@@ -2,6 +2,7 @@
 
 #include "vector/src/vector.hpp"
 #include <cstring>
+#include <iostream>
 
 const int mod1 = 114514123;
 const int base1 = 93;
@@ -42,11 +43,14 @@ int StringToInt(const std::string &str) {
   }
   return ans * flag;
 }
-std::string IntToString(int x) {
+std::string IntToString(int x, int len = -1) {
   std::string ans = "";
   while (x) {
-    ans += ((x % 10) + 'a');
+    ans += ((x % 10) + '0');
     x /= 10;
+  }
+  while (ans.size() < len) {
+    ans += '0';
   }
   for (int i = 0, j = ans.size() - 1; i <= j; i++, j--) {
     std::swap(ans[i], ans[j]);
@@ -71,28 +75,31 @@ int DateToInt(const std::string &str) {
   return ans;
 }
 std::string IntToDate(int date) {
+  // std::cout << "date = " << date << '\n';
   if (date <= 30) {
-    return "06-" + IntToString(date);
+    return "06-" + IntToString(date, 2);
   } else if (date <= 61) {
-    return "07-" + IntToString(date - 30);
+    return "07-" + IntToString(date - 30, 2);
   } else if (date <= 92) {
-    return "08-" + IntToString(date - 61);
+    return "08-" + IntToString(date - 61, 2);
   } else {
-    return "09-" + IntToString(date - 92);
+    return "09-" + IntToString(date - 92, 2);
   }
 }
 std::string IntToTime(int time) {
-  return IntToString(time / 60) + ":" + IntToString(time % 60);
+  // std::cout << "time = " << time << '\n';
+  return IntToString(time / 60, 2) + ":" + IntToString(time % 60, 2);
 }
 std::string FullTimeToString(int full_time) {
-  int time = full_time % (60 * 24), date = time / 60 / 24;
+  // std::cout << "full_time = " << full_time << '\n';
+  int time = full_time % (1440), date = full_time / 1440;
   return IntToDate(date) + ' ' + IntToTime(time);
 }
 sjtu::vector <std::string> split_string(const std::string &str) {
   sjtu::vector <std::string> ans;
   std::string res = "";
-  for (int i = 0; i < str.size(); i++) {
-    if (str[i] == '|' || i + 1 == str.size()) {
+  for (int i = 0; i <= str.size(); i++) {
+    if (str[i] == '|' || i == str.size()) {
       ans.push_back(res);
       res = "";
     } else {

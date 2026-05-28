@@ -13,7 +13,7 @@ TicketSystem ticket_sys(user_sys, train_sys);
 
 void add_user() {
   std::string cur_user, user, pw, name, mail;
-  int type;
+  int type = -1;
   for (int i = 0; i < 6; i++) {
     std::string op = command.getstr();
     if (op == "-c") {
@@ -26,8 +26,16 @@ void add_user() {
       name = command.getstr();
     } else if (op == "-g") {
       type = StringToInt(command.getstr());
+    } else if (op == "-m") {
+      mail = command.getstr();
     }
   }
+  // std::cout << "cur_user = " << cur_user << '\n';
+  // std::cout << "user = " << user << '\n';
+  // std::cout << "pw = " << pw << '\n';
+  // std::cout << "name = " << name << '\n';
+  // std::cout << "mail = " << mail << '\n';
+  // std::cout << "type = " << type << '\n';
   std::cout << user_sys.add_user(cur_user, user, pw, name, mail, type) << '\n';
 }
 void login() {
@@ -79,13 +87,15 @@ void modify_profile() {
       name = command.getstr();
     } else if (op == "-g") {
       type = StringToInt(command.getstr());
+    } else if (op == "-m") {
+      mail = command.getstr();
     }
   }
   user_sys.modify_profile(cur_user, user, pw, name, mail, type);
 }
 void add_train() {
-  int sta_num, seat_num;
-  char ty;
+  int sta_num = 0, seat_num = 0;
+  char ty = ' ';
   std::string id, station, price, st_time, travel_time, stop_time, sale_date;
   for (int i = 0; i < 10; i++) {
     std::string op = command.getstr();
@@ -111,6 +121,7 @@ void add_train() {
       ty = command.getstr()[0];
     }
   }
+  // std::cout << "st_time = " << st_time << '\n';
   std::cout << train_sys.add_train(id, sta_num, seat_num, station, price, st_time, travel_time, stop_time, sale_date, ty) << '\n';
 }
 void delete_train() {
@@ -121,7 +132,7 @@ void delete_train() {
 void release_train() {
   std::string op = command.getstr();
   std::string id = command.getstr();
-  std::cout << train_sys.release_train(id); 
+  std::cout << train_sys.release_train(id) << '\n'; 
 }
 void query_train() {
   std::string id, date;
@@ -171,7 +182,7 @@ void query_transfer() {
 }
 void buy_ticket() {
   std::string user, id, date, st, ed;
-  int buy_num;
+  int buy_num = 0;
   bool flag = false;
   while (!command.empty()) {
     std::string op = command.getstr();
@@ -191,6 +202,11 @@ void buy_ticket() {
       flag = (command.getstr() == "true");
     }
   }
+  // std::cout << "user = " << user << '\n';
+  // std::cout << "id = " << id << '\n';
+  // std::cout << "date = " << date << '\n';
+  // std::cout << "st = " << st << '\n';
+  // std::cout << "ed = " << ed << '\n';
   ticket_sys.buy_ticket(user, id, date, st, ed, buy_num, flag);
 }
 void query_order() {
@@ -217,8 +233,12 @@ void clean() {
   ticket_sys.clean();
 }
 int main() {
+  // std::cout << TimeToInt("18:38");return 0;
   while (command.read()) {
     std::string timestamp = command.getstr();
+    std::cout << timestamp << ' ';
+    int time = StringToInt(timestamp);
+    if (timestamp.size() > 6) return 0;
     std::string op = command.getstr();
     if (op == "add_user") {
       add_user();

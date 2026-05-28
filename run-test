@@ -27,7 +27,8 @@ fi
 
 list=$(jq ".Groups[] | select(.GroupName == \"$1\") | .TestPoints[]" testcases/config.json)
 
-exename="build/code"
+exename="code"
+ln -sf build/code code
 LOG_DIR="./logs"
 mkdir -p "$LOG_DIR"
 if [ ! -e "$exename" ]; then

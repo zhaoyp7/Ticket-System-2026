@@ -56,18 +56,22 @@ public:
       return 0;
     }
     long long now_user = Hash(cur_user);
+    // printf("now_user = %lld\n",now_user);
     if (login_stack.find(now_user) == login_stack.end() ||
         !login_stack[now_user]) {
+      // puts("now user fail login");
       return -1;
     }
     sjtu::vector<int> tmp = user_data_pos.find(now_user, INT_MIN);
     if (tmp.empty()) {
+      // puts("fail to find user");
       return -1;
     }
     int now_user_pos = tmp[0];
     User now;
     user_data.read(now, now_user_pos);
     if (now.privilege <= type) {
+      // puts("privilege failed");
       return -1;
     }
     count++;
@@ -88,6 +92,7 @@ public:
     if (strcmp(now.password, pw.c_str()) || login_stack[now_user]) {
       return -1;
     }
+    // printf("login : %lld\n",now_user);
     login_stack[now_user] = 1;
     return 0;
   }

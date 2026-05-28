@@ -75,6 +75,7 @@ public:
     int train_pos = tmp[0];
     Train train;
     train_sys.train_data.read(train, train_pos);
+    // train.debug();
     if (train.is_released == false) {
       std::cout << "-1\n";
       return;
@@ -86,6 +87,12 @@ public:
     int start_time = (train.startTime + time_first) % 1440;
     int station1 = 0, station2 = 0;
     int cost = train.calc_cost(st, ed);
+    // std::cout << "time_first = " << time_first << '\n';
+    // std::cout << "time_second = " << time_second << '\n';
+    // std::cout << "delta_date = " << delta_date << '\n';
+    // std::cout << "start_date = " << start_date << '\n';
+    // std::cout << "start_time = " << start_time << '\n';
+    // std::cout << "cost = " << cost << '\n';
     while (station1 < train.stationNum && train.stations[station1] != st) {
       station1++;
     }
@@ -101,9 +108,13 @@ public:
     int leaving_time = train.calc_departure_time(st) + time0;
     int arrival_time = train.calc_arrival_time(ed) + time0;
     int empty_seat = train.seatNum;
+    // std::cout << "time0 = " << time0 << '\n';
+    // std::cout << "leaving_time = " << leaving_time << '\n';
+    // std::cout << "arrival_time = " << arrival_time << '\n';
     for (int i = station1; i < station2; i++) {
       empty_seat = std::min(empty_seat, train.seats[start_date][i]);
     }
+    // std::cout << "empty_seat = " << empty_seat << '\n';
     if (empty_seat < buy_num && flag == false) {
       std::cout << "-1\n";
       return;
@@ -115,13 +126,13 @@ public:
         train.seats[start_date][i] -= buy_num;
       }
       train_sys.train_data.update(train, train_pos);
-      std::cout << cost << '\n';
+      std::cout << cost * buy_num << '\n';
     } else {
       status = TicketStatus::Pending;
       std::cout << "queue\n";
     }
     Ticket ticket(user, id, st, ed, start_date, buy_num, leaving_time,
-                  arrival_time, cost, status, ++count);
+                  arrival_time, cost * buy_num, status, ++count);
     int pos = ticket_data.write(ticket);
     ticket_data_pos.insert(Hash(user), pos);
     if (empty_seat < buy_num) {
