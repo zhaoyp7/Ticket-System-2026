@@ -92,6 +92,9 @@ public:
     if (train.is_released == false) {
       std::cout << "-1\n";
       return;
+    } else if (buy_num > train.seatNum) {
+      std::cout << "-1\n";
+      return;
     }
     int time_first = train.calc_departure_time(st);
     int time_second = train.calc_arrival_time(ed);
