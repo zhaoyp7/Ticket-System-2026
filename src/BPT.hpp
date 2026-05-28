@@ -10,7 +10,7 @@
 
 constexpr int MAX_INDEX_LEN = 64;
 constexpr int NODE_SIZE = 4096;
-constexpr int CACHE_CAPACITY = 400;
+constexpr int CACHE_CAPACITY = 460;
 
 class LRUCache {
 private:
