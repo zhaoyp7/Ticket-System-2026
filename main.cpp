@@ -11,6 +11,8 @@ UserSystem user_sys;
 TrainSystem train_sys;
 TicketSystem ticket_sys(user_sys, train_sys);
 
+
+
 void add_user() {
   std::string cur_user, user, pw, name, mail;
   int type = -1;

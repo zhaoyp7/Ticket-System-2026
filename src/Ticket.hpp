@@ -4,9 +4,10 @@
 #include "Train.hpp"
 #include "User.hpp"
 #include "map/src/map.hpp"
+#include "my_sort.hpp"
 #include "utils.hpp"
 #include "vector/src/vector.hpp"
-#include "my_sort.hpp"
+#include <cassert>
 #include <climits>
 #include <cstring>
 #include <string>
@@ -181,8 +182,8 @@ public:
       std::cout << ticket.trainID << ' ' << ticket.st_station << ' '
                 << FullTimeToString(ticket.leaving_time) << " -> "
                 << ticket.ed_station << ' '
-                << FullTimeToString(ticket.arrival_time) << ' ' << ticket.price / ticket.amount
-                << ' ' << ticket.amount << '\n';
+                << FullTimeToString(ticket.arrival_time) << ' '
+                << ticket.price / ticket.amount << ' ' << ticket.amount << '\n';
     }
   }
   int refund_ticket(const std::string &user, int refund_num) {
@@ -191,52 +192,68 @@ public:
       return -1;
     } else if (user_sys.login_stack[Hash(user)] == 0) {
       return -1;
-    }    
+    }
     tmp = ticket_data_pos.find(Hash(user), INT_MIN);
     // puts("find ticket");
     if (tmp.size() < refund_num) {
       return -1;
     }
     // TODO:
-    my::sort(tmp, std::greater<>());    
+    my::sort(tmp, std::greater<>());
     int ticket_pos = tmp[refund_num - 1];
     Ticket ticket;
     ticket_data.read(ticket, ticket_pos);
     // ticket.debug();
+    TicketStatus old_status = ticket.status;
     if (ticket.status == TicketStatus::Refunded) {
       return -1;
     } else if (ticket.status == TicketStatus::Pending) {
-      queue_pos.remove(Hash((std::string)ticket.trainID + "$" +
-                            IntToString(ticket.start_date)),
-                       ticket_pos);
+      std::string str =
+          (std::string)ticket.trainID + "$" + IntToString(ticket.start_date);
+      queue_pos.remove(Hash(str), ticket_pos);
     }
     ticket.status = TicketStatus::Refunded;
     ticket_data.update(ticket, ticket_pos);
-    // std::cout << "hash = " << Hash(ticket.trainID) << '\n';
+    if (old_status != TicketStatus::Success) {
+      return 0;
+    }
+
     Train train;
-    int train_pos = train_sys.train_data_pos.find(Hash(ticket.trainID), INT_MIN)[0];
+    int train_pos =
+        train_sys.train_data_pos.find(Hash(ticket.trainID), INT_MIN)[0];
     train_sys.train_data.read(train, train_pos);
-    // train.debug();
-    // train.debug_seat();
     int p = 0;
-    while (p < train.stationNum && strcmp(train.stations[p], ticket.st_station)) {
-      // std::cout << "p = " << p << train.stations[p] << ' ' << ticket.st_station << '\n';
+    while (p < train.stationNum &&
+           strcmp(train.stations[p], ticket.st_station)) {
+      // std::cout << "p = " << p << train.stations[p] << ' ' <<
+      // ticket.st_station << '\n';
       p++;
     }
-    while (p < train.stationNum && strcmp(train.stations[p],ticket.ed_station)) {
+    while (p < train.stationNum &&
+           strcmp(train.stations[p], ticket.ed_station)) {
       train.seats[ticket.start_date][p] += ticket.amount;
       p++;
     }
+
+    // std::cout << "hash = " << Hash(ticket.trainID) << '\n';
+    // if (timestamp == "[70703]") {
+    //   ticket.debug();
+    //   train.debug();
+    // }
+    // train.debug();
+    // train.debug_seat();
     // train.debug_seat();
     // train.debug();
     // puts("aaaaaaaaaaaaaaa");
     // std::cout << "ticket.start_date = " << ticket.start_date << '\n';
     // IntToString(ticket.start_date);
-    // exit(0);
-    // std::string strrrrr = (std::string)ticket.trainID + "$" + IntToString(ticket.start_date);
-    // std::cout << "strrrr = " << strrrrr << '\n';
-    // exit(0);
-    sjtu::vector<int> pending_queue = queue_pos.find(Hash((std::string)ticket.trainID + "$" + IntToString(ticket.start_date)), INT_MIN);
+    // std::string strrrrr = (std::string)ticket.trainID + "$" +
+    // IntToString(ticket.start_date); std::cout << "strrrr = " << strrrrr <<
+    // '\n';
+    sjtu::vector<int> pending_queue =
+        queue_pos.find(Hash((std::string)ticket.trainID + "$" +
+                            IntToString(ticket.start_date)),
+                       INT_MIN);
     // puts("find pending queue");
     // exit(0);
 
@@ -245,6 +262,7 @@ public:
     for (int ticket_pos : pending_queue) {
       Ticket ticket;
       ticket_data.read(ticket, ticket_pos);
+      assert(ticket.status == TicketStatus::Pending);
       std::string st = ticket.st_station, ed = ticket.ed_station;
       int time_first = train.calc_departure_time(st);
       int time_second = train.calc_arrival_time(ed);
@@ -269,6 +287,15 @@ public:
       if (empty_seat < ticket.amount) {
         continue;
       }
+      // if (timestamp == "[70703]") {
+      //   ticket.debug();
+      //   train.debug_seat(39);
+      //   std::cout << "station1 = " << station1 << '\n';
+      //   std::cout << "station2 = " << station2 << '\n';
+      //   std::cout << "start_date = " << start_date << '\n';
+      //   std::cout << "empty_seat = " << empty_seat << '\n';
+        // train.debug();
+      // }
       ticket.status = TicketStatus::Success;
       for (int i = station1; i < station2; i++) {
         train.seats[start_date][i] -= ticket.amount;
@@ -279,7 +306,10 @@ public:
           ticket_pos);
     }
     train_sys.train_data.update(train, train_pos);
-    return 0 ;
+    // if (timestamp == "[70703]") {
+    //   exit(0);
+    // }
+    return 0;
   }
   void clean() {
     count = 0;
