@@ -236,6 +236,7 @@ int main() {
   // std::cout << TimeToInt("18:38");return 0;
   while (command.read()) {
     std::string timestamp = command.getstr();
+    // if (timestamp == "[26704]") return 0 ;
     std::cout << timestamp << ' ';
     // int time = StringToInt(timestamp);
     // if (timestamp.size() > 6) return 0;

@@ -217,14 +217,17 @@ public:
     int train_pos = train_sys.train_data_pos.find(Hash(ticket.trainID), INT_MIN)[0];
     train_sys.train_data.read(train, train_pos);
     // train.debug();
+    // train.debug_seat();
     int p = 0;
-    while (p < train.stationNum && train.stations[p] != ticket.st_station) {
+    while (p < train.stationNum && strcmp(train.stations[p], ticket.st_station)) {
+      // std::cout << "p = " << p << train.stations[p] << ' ' << ticket.st_station << '\n';
       p++;
     }
-    while (p < train.stationNum && train.stations[p] != ticket.ed_station) {
+    while (p < train.stationNum && strcmp(train.stations[p],ticket.ed_station)) {
       train.seats[ticket.start_date][p] += ticket.amount;
       p++;
     }
+    // train.debug_seat();
     // train.debug();
     // puts("aaaaaaaaaaaaaaa");
     // std::cout << "ticket.start_date = " << ticket.start_date << '\n';

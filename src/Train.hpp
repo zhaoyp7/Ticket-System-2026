@@ -118,6 +118,15 @@ struct Train {
     }
     puts("********end debug train********");
   }
+  void debug_seat() {
+    for (int i = saleDate_begin; i <= saleDate_end; i++) {
+      std::cout << "date = " << i << ' ';
+      for (int j = 0; j < stationNum; j++) {
+        std::cout << seats[i][j] << ' ';
+      }
+      puts("");
+    }
+  }
 };
 
 class TrainSystem {
@@ -190,7 +199,7 @@ public:
     train.is_released = 1;
     train_data.update(train, train_pos);
     for (int i = 0; i < train.stationNum; i++) {
-      station_pos.insert(Hash(train.stations[i]), train_hash);
+      station_pos.insert(Hash(train.stations[i]), train_pos);
     }
     for (int i = 0; i < train.stationNum; i++) {
       for (int j = i + 1; j < train.stationNum; j++) {
@@ -266,6 +275,7 @@ public:
       Train train;
       train_data.read(train, pos);
       // train.debug();
+      // train.debug_seat();
       int time_first = train.calc_departure_time(st);
       int time_second = train.calc_arrival_time(ed);
       int delta_date = (train.startTime + time_first) / 1440;
@@ -276,7 +286,7 @@ public:
       // std::cout << "delta_date = " << delta_date << '\n';
       // std::cout << "start_date = " << start_date << '\n';
       // std::cout << "start_time = " << start_time << '\n';
-    if (start_date < train.saleDate_begin ||
+      if (start_date < train.saleDate_begin ||
           start_date > train.saleDate_end) {
         continue;
       }
@@ -327,6 +337,7 @@ public:
       }
     } ans;
     ans.val1 = 2e9;
+    // std::cout << "all_train_pos size = " << all_train_pos.size() << '\n';
     for (int pos1 : all_train_pos) {
       Train train1;
       train_data.read(train1, pos1);
@@ -334,31 +345,41 @@ public:
       int delta_date1 = (train1.startTime + time1_first) / 1440;
       int start_date1 = DateToInt(date) - delta_date1;
       int start_time1 = (train1.startTime + time1_first) % 1440;
-      if (start_date1 < train1.saleDate_begin ||
-          start_date1 > train1.saleDate_end) {
+      
+      if (start_date1 > train1.saleDate_end) {
         continue;
+      } else if (start_date1 < train1.saleDate_begin) {
+        start_date1 = train1.saleDate_begin;
       }
+      // train1.debug();
       bool flag = 0;
       for (int i = 0; i < train1.stationNum; i++) {
+        // std::cout << "i = " << i << " flag = " << flag << '\n';
         if (flag) {
           std::string mid_station = train1.stations[i];
           int time1_second = train1.calc_arrival_time(mid_station);
           std::string str = mid_station + "$" + (std::string)(ed);
           sjtu::vector<int> all_second_train_pos = route_pos.find(Hash(str), INT_MIN);
+          // std::cout << "all_second_train_pos size = " << all_second_train_pos.size() << '\n';
           for (int pos2 : all_second_train_pos) {
             if (pos1 == pos2) {
               continue;
             }
             Train train2;
             train_data.read(train2, pos2);
+            // train2.debug();
             int mid_time = start_date1 * 1440 + train1.startTime + time1_first;
             int time2_first = train2.calc_departure_time(mid_station);
             int time2_second = train2.calc_arrival_time(ed);
             int start_date2 = (mid_time - time2_first - train2.startTime) / 1440;
             int start_time2 = (train2.startTime + time2_first) % 1440;
-            if (start_date2 < train2.saleDate_begin || start_date2 > train2.saleDate_end) {
+            if (start_date2 > train2.saleDate_end) {
               continue;
+            } else if (start_date2 < train2.saleDate_begin) {
+              start_date2 = train2.saleDate_begin;
             }
+            
+            // train2.debug();
             transfer res;
             res.mid_station = mid_station;
             res.id1 = train1.trainID;

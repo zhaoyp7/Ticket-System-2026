@@ -7,3 +7,5 @@ code
 data.out
 /build
 /logs
+data.log
+data.in
