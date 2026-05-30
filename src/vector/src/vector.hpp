@@ -177,13 +177,13 @@ class vector {
     };
 
    private:
-    int len, sz;
+    size_t len, sz;
     T *val;
     void DoubleSpace() {
         T *tmp = val;
         len *= 2;
         val = static_cast<T *>(operator new[](len * sizeof(T)));
-        for (int i = 0; i < sz; i++) {
+        for (int i = 0; i < (int)sz; i++) {
             new (&val[i]) T(tmp[i]);
             tmp[i].~T();
         }
@@ -196,12 +196,12 @@ class vector {
     }
     vector(const vector &other) : len(other.len), sz(other.sz) {
         val = static_cast<T *>(operator new[](len * sizeof(T)));
-        for (int i = 0; i < sz; i++) {
+        for (int i = 0; i < (int)sz; i++) {
             new (&val[i]) T(other[i]);
         }
     }
     ~vector() {
-        for (int i = 0; i < sz; i++) {
+        for (int i = 0; i < (int)sz; i++) {
             val[i].~T();
         }
         operator delete[](val);
@@ -210,14 +210,14 @@ class vector {
         if (&other == this) {
             return (*this);
         }
-        for (int i = 0; i < sz; i++) {
+        for (int i = 0; i < (int)sz; i++) {
             val[i].~T();
         }
         operator delete[](val);
         len = other.len;
         sz = other.sz;
         val = static_cast<T *>(operator new[](len * sizeof(T)));
-        for (int i = 0; i < sz; i++) {
+        for (int i = 0; i < (int)sz; i++) {
             new (&val[i]) T(other[i]);
         }
         return (*this);
@@ -289,7 +289,7 @@ class vector {
         return sz;
     }
     void clear() {
-        for (int i = 0; i < sz; i++) {
+        for (int i = 0; i < (int)sz; i++) {
             val[i].~T();
         }
         sz = 0;

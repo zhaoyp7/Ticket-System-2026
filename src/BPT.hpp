@@ -97,7 +97,7 @@ private:
   }
 
 public:
-  LRUCache(int cap, std::fstream &fs) : file(fs), capacity(cap) {
+  LRUCache(int cap, std::fstream &fs) : capacity(cap), file(fs) {
     size = 0;
     items = new Entry[cap];
     lru_head = lru_tail = -1;

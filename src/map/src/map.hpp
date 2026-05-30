@@ -28,7 +28,7 @@ class map {
         Node *r;
         Color col;
         Node(value_type data)
-            : data(data), l(nullptr), r(nullptr), fa(nullptr), col(Color::RED) {
+            : data(data), fa(nullptr), l(nullptr), r(nullptr), col(Color::RED) {
         }
         Node *clone() {
             Node *pos = new Node(data);
@@ -554,7 +554,7 @@ class map {
             return &(pos->data);
         }
     };
-    map() : rt(nullptr), sz(0) {
+    map() : sz(0), rt(nullptr) {
     }
     map(const map &other) : rt(nullptr), sz(other.sz) {
         if (other.rt != nullptr) {

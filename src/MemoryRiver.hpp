@@ -62,14 +62,7 @@ public:
     file.read(reinterpret_cast<char *>(&t), sizeofT);
     file.close();
   }
-  void Delete(int index) {
-    T tmp;
-    std::memset(&tmp, 0, sizeof(tmp));
-    file.open(file_name, std::ios::in | std::ios::out);
-    file.seekp(index);
-    file.write(reinterpret_cast<char *>(&tmp), sizeofT);
-    file.close();
-  }
+  void Delete(int index) {}
   void clean() {
     file.close();
     file.open(file_name, std::ios::trunc); // 加 trunc 清空

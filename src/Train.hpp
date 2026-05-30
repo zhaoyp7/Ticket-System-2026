@@ -113,7 +113,9 @@ struct Train {
     std::cout << "type = " << type << '\n';
     std::cout << "is_released = " << is_released << '\n';
     for (int i = 0; i < stationNum; i++) {
-      std::cout << stations[i] << ", travaltime = " << travelTimes[i] << ", prices = " << prices[i] << ", stoptime = " << stopoverTimes[i] << '\n';
+      std::cout << stations[i] << ", travaltime = " << travelTimes[i]
+                << ", prices = " << prices[i]
+                << ", stoptime = " << stopoverTimes[i] << '\n';
     }
     puts("********end debug train********");
   }
@@ -124,7 +126,7 @@ struct Train {
         std::cout << seats[date][j] << ' ';
       }
       puts("");
-      return ;
+      return;
     }
     for (int i = saleDate_begin; i <= saleDate_end; i++) {
       std::cout << "date = " << i << ' ';
@@ -137,7 +139,8 @@ struct Train {
 };
 
 class TrainSystem {
-friend class TicketSystem;
+  friend class TicketSystem;
+
 private:
   MemoryRiver<Train> train_data;
   BPT<long long, int> train_data_pos;
@@ -145,8 +148,9 @@ private:
   BPT<long long, int> station_pos;
 
 public:
-  TrainSystem() : train_data_pos("TrainDataPos"), 
-                  route_pos("RoutePos"), station_pos("StationPos") {
+  TrainSystem()
+      : train_data_pos("TrainDataPos"), route_pos("RoutePos"),
+        station_pos("StationPos") {
     train_data.initialise("TrainData");
   }
   ~TrainSystem() = default;
@@ -221,7 +225,7 @@ public:
     int date_int = DateToInt(date);
     if (date_int < train.saleDate_begin || date_int > train.saleDate_end) {
       std::cout << "-1" << '\n';
-      return;      
+      return;
     }
     std::cout << train.trainID << ' ' << train.type << '\n';
     int time = date_int * 24 * 60 + train.startTime;
@@ -253,7 +257,6 @@ public:
   void query_ticket(const std::string &st, const std::string &ed,
                     const std::string &date, bool flag) {
     std::string str = (std::string)(st) + "$" + (std::string)(ed);
-    // std::cout << "query " << str << '\n';
     sjtu::vector<int> all_train_pos = route_pos.find(Hash(str), INT_MIN);
     struct route {
       std::string id;
@@ -264,25 +267,14 @@ public:
         return (val == b.val ? id < b.id : val < b.val);
       }
     };
-    // std::cout << "st = " << st << '\n';
-    // std::cout << "ed = " << ed << '\n';
     sjtu::vector<route> ans;
     for (int pos : all_train_pos) {
-      // std::cout << "train_pos = " << pos << '\n';
       Train train;
       train_data.read(train, pos);
-      // train.debug();
-      // train.debug_seat();
       int time_first = train.calc_departure_time(st);
       int time_second = train.calc_arrival_time(ed);
       int delta_date = (train.startTime + time_first) / 1440;
       int start_date = DateToInt(date) - delta_date;
-      int start_time = (train.startTime + time_first) % 1440;
-      // std::cout << "time_first = " << time_first << '\n';
-      // std::cout << "time_second = " << time_second << '\n';
-      // std::cout << "delta_date = " << delta_date << '\n';
-      // std::cout << "start_date = " << start_date << '\n';
-      // std::cout << "start_time = " << start_time << '\n';
       if (start_date < train.saleDate_begin ||
           start_date > train.saleDate_end) {
         continue;
@@ -294,17 +286,9 @@ public:
       tic.price = train.calc_cost(st, ed);
       tic.seat = train.calc_seat(st, ed, start_date);
       tic.val = (flag ? time_second - time_first : tic.price);
-
-      // std::cout << "id = " << tic.id << '\n';
-      // std::cout << "arrival_time = " << tic.arrival_time << '\n';
-      // std::cout << "leaving_time = " << tic.leaving_time << '\n';
-      // std::cout << "price = " << tic.price << '\n';
-      // std::cout << "seat = " << tic.seat << '\n';
-      // std::cout << "val = " << tic.val << '\n';
-
       ans.push_back(tic);
     }
-    sort(ans);
+    sort(ans, true);
     std::cout << ans.size() << '\n';
     for (route tic : ans) {
       std::cout << tic.id << ' ' << st << ' '
@@ -321,7 +305,7 @@ public:
       int leaving_time1, arrival_time1, leaving_time2, arrival_time2;
       int price1, seat1, price2, seat2;
       int val1, val2;
-      bool operator<(const transfer &b) const  {
+      bool operator<(const transfer &b) const {
         if (val1 != b.val1) {
           return val1 < b.val1;
         } else if (val2 != b.val2) {
@@ -334,90 +318,62 @@ public:
       }
     } ans;
     ans.val1 = 2e9;
-    // std::cout << "all_train_pos size = " << all_train_pos.size() << '\n';
     for (int pos1 : all_train_pos) {
       Train train1;
       train_data.read(train1, pos1);
       int time1_first = train1.calc_departure_time(st);
       int delta_date1 = (train1.startTime + time1_first) / 1440;
       int start_date1 = DateToInt(date) - delta_date1;
-      int start_time1 = (train1.startTime + time1_first) % 1440;
-      
       if (start_date1 > train1.saleDate_end) {
         continue;
       } else if (start_date1 < train1.saleDate_begin) {
         continue;
-        // start_date1 = train1.saleDate_begin;
       }
-      // train1.debug();
       bool flag = 0;
       for (int i = 0; i < train1.stationNum; i++) {
-        // std::cout << "i = " << i << " flag = " << flag << '\n';
         if (flag) {
           std::string mid_station = train1.stations[i];
           int time1_second = train1.calc_arrival_time(mid_station);
           std::string str = mid_station + "$" + (std::string)(ed);
-          sjtu::vector<int> all_second_train_pos = route_pos.find(Hash(str), INT_MIN);
-          // std::cout << "all_second_train_pos size = " << all_second_train_pos.size() << '\n';
+          sjtu::vector<int> all_second_train_pos =
+              route_pos.find(Hash(str), INT_MIN);
           for (int pos2 : all_second_train_pos) {
             if (pos1 == pos2) {
               continue;
             }
             Train train2;
             train_data.read(train2, pos2);
-            // train2.debug();
             int mid_time = start_date1 * 1440 + train1.startTime + time1_second;
             int time2_first = train2.calc_departure_time(mid_station);
             int time2_second = train2.calc_arrival_time(ed);
-            int start_date2 = (mid_time - time2_first - train2.startTime + 1439) / 1440;
-            int start_time2 = (train2.startTime + time2_first) % 1440;
-
+            int start_date2 =
+                (mid_time - time2_first - train2.startTime + 1439) / 1440;
             if (start_date2 > train2.saleDate_end) {
               continue;
             } else if (start_date2 < train2.saleDate_begin) {
               start_date2 = train2.saleDate_begin;
             }
-            // train2.debug();
             transfer res;
             res.mid_station = mid_station;
             res.id1 = train1.trainID;
-            res.arrival_time1 = start_date1 * 1440 + train1.startTime + time1_second;
-            res.leaving_time1 = start_date1 * 1440 + train1.startTime + time1_first;
+            res.arrival_time1 =
+                start_date1 * 1440 + train1.startTime + time1_second;
+            res.leaving_time1 =
+                start_date1 * 1440 + train1.startTime + time1_first;
             res.price1 = train1.calc_cost(st, mid_station);
             res.seat1 = train1.calc_seat(st, mid_station, start_date1);
             res.id2 = train2.trainID;
-            res.arrival_time2 = start_date2 * 1440 + train2.startTime + time2_second;
-            res.leaving_time2 = start_date2 * 1440 + train2.startTime + time2_first;
+            res.arrival_time2 =
+                start_date2 * 1440 + train2.startTime + time2_second;
+            res.leaving_time2 =
+                start_date2 * 1440 + train2.startTime + time2_first;
             res.price2 = train2.calc_cost(mid_station, ed);
             res.seat2 = train2.calc_seat(mid_station, ed, start_date2);
             res.val1 = res.price1 + res.price2;
             res.val2 = res.arrival_time2 - res.leaving_time1;
-            // if (res.arrival_time1 > res.leaving_time2) {
-            //   std::cout << "mid_time = " << mid_time << '\n';
-            //   std::cout << "time2_first = " << time2_first << '\n';
-            //   std::cout << "train2.startTime = " << train2.startTime << '\n';
-            //   std::cout << "start_date2 = " << start_date2 << '\n';
-            //   std::cout << "start_time2 = " << start_time2 << '\n';
-              // std::cout << "time2_first = " << time2_first << '\n';
-            // }
-            // if (start_date1 == 33) {
-            //   std::cout << "start_date1 = " << start_date1 << '\n';
-            //   std::cout << ""
-            // }
             if (flag_time) {
               std::swap(res.val1, res.val2);
             }
-      //       if (res.mid_station == "北京市" && st == "内蒙乌兰浩特市" && ed == "辽宁省大连市") {
-      //               std::cout << res.id1 << ' ' << st << ' '
-      //           << FullTimeToString(res.leaving_time1) << " -> "
-      //           << res.mid_station << ' ' << FullTimeToString(res.arrival_time1)
-      //           << ' ' << res.price1 << ' ' << res.seat1 << '\n';
-      // std::cout << res.id2 << ' ' << res.mid_station << ' '
-      //           << FullTimeToString(ans.leaving_time2) << " -> " << ed << ' '
-      //           << FullTimeToString(ans.arrival_time2) << ' ' << res.price2
-      //           << ' ' << res.seat2 << '\n';
-      //         std::cout << res.val1 << '\n';
-      //       }
             if (res < ans) {
               ans = res;
             }

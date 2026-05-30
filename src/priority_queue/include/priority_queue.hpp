@@ -32,7 +32,7 @@ class priority_queue {
         Node* son;
         Node* sibling;
         int deg;
-        Node(T value) : son(nullptr), sibling(nullptr), deg(0), data(value) {
+        Node(T value) : data(value), son(nullptr), sibling(nullptr), deg(0) {
         }
         Node* clone() {
             Node* pos = new Node(data);
@@ -207,7 +207,7 @@ class priority_queue {
 
    public:
     priority_queue()
-        : head(nullptr), sz(0), max_pos(nullptr), max_pre(nullptr) {
+        : head(nullptr), max_pos(nullptr), max_pre(nullptr), sz(0) {
     }
     priority_queue(const priority_queue& other) : head(nullptr) {
         sz = other.sz;

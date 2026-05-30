@@ -62,8 +62,8 @@ private:
 public:
   TicketSystem() = delete;
   TicketSystem(UserSystem &user_sys, TrainSystem &train_sys)
-      : user_sys(user_sys), train_sys(train_sys),
-        ticket_data_pos("TicketDataPos"), queue_pos("QueuePos") {
+      : ticket_data_pos("TicketDataPos"), queue_pos("QueuePos"),
+        user_sys(user_sys), train_sys(train_sys) {
     ticket_data.initialise("TicketData");
     ticket_data.get_info(count, 1);
   }
@@ -87,7 +87,6 @@ public:
     int train_pos = tmp[0];
     Train train;
     train_sys.train_data.read(train, train_pos);
-    // train.debug();
     if (train.is_released == false) {
       std::cout << "-1\n";
       return;
@@ -96,22 +95,14 @@ public:
       return;
     }
     int time_first = train.calc_departure_time(st);
-    int time_second = train.calc_arrival_time(ed);
     int delta_date = (train.startTime + time_first) / 1440;
     int start_date = DateToInt(date) - delta_date;
-    int start_time = (train.startTime + time_first) % 1440;
     int station1 = 0, station2 = 0;
     int cost = train.calc_cost(st, ed);
     if (start_date < train.saleDate_begin || start_date > train.saleDate_end) {
       std::cout << "-1\n";
       return;
     }
-    // std::cout << "time_first = " << time_first << '\n';
-    // std::cout << "time_second = " << time_second << '\n';
-    // std::cout << "delta_date = " << delta_date << '\n';
-    // std::cout << "start_date = " << start_date << '\n';
-    // std::cout << "start_time = " << start_time << '\n';
-    // std::cout << "cost = " << cost << '\n';
     while (station1 < train.stationNum && train.stations[station1] != st) {
       station1++;
     }
@@ -127,13 +118,9 @@ public:
     int leaving_time = train.calc_departure_time(st) + time0;
     int arrival_time = train.calc_arrival_time(ed) + time0;
     int empty_seat = train.seatNum;
-    // std::cout << "time0 = " << time0 << '\n';
-    // std::cout << "leaving_time = " << leaving_time << '\n';
-    // std::cout << "arrival_time = " << arrival_time << '\n';
     for (int i = station1; i < station2; i++) {
       empty_seat = std::min(empty_seat, train.seats[start_date][i]);
     }
-  // std::cout << "empty_seat = " << empty_seat << '\n';
     if (empty_seat < buy_num && flag == false) {
       std::cout << "-1\n";
       return;
@@ -168,7 +155,7 @@ public:
       return;
     }
     sjtu::vector<int> ticket_pos = ticket_data_pos.find(Hash(user), INT_MIN);
-    sort(ticket_pos, true);
+    sort(ticket_pos);
     std::cout << ticket_pos.size() << '\n';
     for (int pos : ticket_pos) {
       Ticket ticket;
@@ -195,15 +182,13 @@ public:
       return -1;
     }
     tmp = ticket_data_pos.find(Hash(user), INT_MIN);
-    // puts("find ticket");
-    if (tmp.size() < refund_num) {
+    if ((int)tmp.size() < refund_num) {
       return -1;
     }
-    sort(tmp, true);
+    sort(tmp);
     int ticket_pos = tmp[refund_num - 1];
     Ticket ticket;
     ticket_data.read(ticket, ticket_pos);
-    // ticket.debug();
     TicketStatus old_status = ticket.status;
     if (ticket.status == TicketStatus::Refunded) {
       return -1;
@@ -225,8 +210,6 @@ public:
     int p = 0;
     while (p < train.stationNum &&
            strcmp(train.stations[p], ticket.st_station)) {
-      // std::cout << "p = " << p << train.stations[p] << ' ' <<
-      // ticket.st_station << '\n';
       p++;
     }
     while (p < train.stationNum &&
@@ -234,51 +217,24 @@ public:
       train.seats[ticket.start_date][p] += ticket.amount;
       p++;
     }
-
-    // std::cout << "hash = " << Hash(ticket.trainID) << '\n';
-    // if (timestamp == "[70703]") {
-    //   ticket.debug();
-    //   train.debug();
-    // }
-    // train.debug();
-    // train.debug_seat();
-    // train.debug_seat();
-    // train.debug();
-    // puts("aaaaaaaaaaaaaaa");
-    // std::cout << "ticket.start_date = " << ticket.start_date << '\n';
-    // IntToString(ticket.start_date);
-    // std::string strrrrr = (std::string)ticket.trainID + "$" +
-    // IntToString(ticket.start_date); std::cout << "strrrr = " << strrrrr <<
-    // '\n';
     sjtu::vector<int> pending_queue =
         queue_pos.find(Hash((std::string)ticket.trainID + "$" +
                             IntToString(ticket.start_date)),
                        INT_MIN);
-    // puts("find pending queue");
-    // exit(0);
-
-    sort(pending_queue);
+    sort(pending_queue, true);
     for (int ticket_pos : pending_queue) {
       Ticket ticket;
       ticket_data.read(ticket, ticket_pos);
       assert(ticket.status == TicketStatus::Pending);
       std::string st = ticket.st_station, ed = ticket.ed_station;
-      int time_first = train.calc_departure_time(st);
-      int time_second = train.calc_arrival_time(ed);
-      int delta_date = (train.startTime + time_first) / 1440;
       int start_date = ticket.start_date;
-      int start_time = (train.startTime + time_first) % 1440;
       int station1 = 0, station2 = 0;
-      int cost = train.calc_cost(st, ed);
       while (station1 < train.stationNum && train.stations[station1] != st) {
         station1++;
       }
       while (station2 < train.stationNum && train.stations[station2] != ed) {
         station2++;
       }
-      int time0 = start_date * 1440 + train.startTime;
-      int leaving_time = train.calc_departure_time(st) + time0;
-      int arrival_time = train.calc_arrival_time(ed) + time0;
       int empty_seat = train.seatNum;
       for (int i = station1; i < station2; i++) {
         empty_seat = std::min(empty_seat, train.seats[start_date][i]);
@@ -286,15 +242,6 @@ public:
       if (empty_seat < ticket.amount) {
         continue;
       }
-      // if (timestamp == "[70703]") {
-      //   ticket.debug();
-      //   train.debug_seat(39);
-      //   std::cout << "station1 = " << station1 << '\n';
-      //   std::cout << "station2 = " << station2 << '\n';
-      //   std::cout << "start_date = " << start_date << '\n';
-      //   std::cout << "empty_seat = " << empty_seat << '\n';
-        // train.debug();
-      // }
       ticket.status = TicketStatus::Success;
       for (int i = station1; i < station2; i++) {
         train.seats[start_date][i] -= ticket.amount;
@@ -305,9 +252,6 @@ public:
           ticket_pos);
     }
     train_sys.train_data.update(train, train_pos);
-    // if (timestamp == "[70703]") {
-    //   exit(0);
-    // }
     return 0;
   }
   void clean() {
