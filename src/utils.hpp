@@ -1,8 +1,9 @@
 #pragma once
 
 #include "vector/src/vector.hpp"
+#include "priority_queue/include/priority_queue.hpp"
 #include <cstring>
-#include <iostream>
+#include <utility>
 
 const int mod1 = 114514123;
 const int base1 = 93;
@@ -109,4 +110,21 @@ sjtu::vector <std::string> split_string(const std::string &str) {
     }
   }
   return ans;
+}
+
+template <typename ValueType> 
+void sort(sjtu::vector <ValueType> &arr, bool reverse = false) {
+  sjtu::priority_queue<ValueType> q;
+  while (!arr.empty()) {
+    q.push(arr.back());
+    arr.pop_back();
+  }
+  while (!q.empty()) {
+    arr.push_back(q.pop());
+  }
+  if (reverse) {
+    for (int i = 0, j = (int)arr.size() - 1; i < j; i++, j--) {
+      std::swap(arr[i], arr[j]);
+    }
+  }
 }

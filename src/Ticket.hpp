@@ -4,7 +4,6 @@
 #include "Train.hpp"
 #include "User.hpp"
 #include "map/src/map.hpp"
-#include "my_sort.hpp"
 #include "utils.hpp"
 #include "vector/src/vector.hpp"
 #include <cassert>
@@ -54,9 +53,9 @@ struct Ticket {
 class TicketSystem {
 private:
   int count = 0;
+  MemoryRiver<Ticket> ticket_data;
   BPT<long long, int> ticket_data_pos;
   BPT<long long, int> queue_pos;
-  MemoryRiver<Ticket> ticket_data;
   UserSystem &user_sys;
   TrainSystem &train_sys;
 
@@ -134,7 +133,7 @@ public:
     for (int i = station1; i < station2; i++) {
       empty_seat = std::min(empty_seat, train.seats[start_date][i]);
     }
-    // std::cout << "empty_seat = " << empty_seat << '\n';
+  // std::cout << "empty_seat = " << empty_seat << '\n';
     if (empty_seat < buy_num && flag == false) {
       std::cout << "-1\n";
       return;
@@ -169,8 +168,7 @@ public:
       return;
     }
     sjtu::vector<int> ticket_pos = ticket_data_pos.find(Hash(user), INT_MIN);
-    // TODO:
-    my::sort(ticket_pos, std::greater<>());
+    sort(ticket_pos, true);
     std::cout << ticket_pos.size() << '\n';
     for (int pos : ticket_pos) {
       Ticket ticket;
@@ -201,8 +199,7 @@ public:
     if (tmp.size() < refund_num) {
       return -1;
     }
-    // TODO:
-    my::sort(tmp, std::greater<>());
+    sort(tmp, true);
     int ticket_pos = tmp[refund_num - 1];
     Ticket ticket;
     ticket_data.read(ticket, ticket_pos);
@@ -260,8 +257,7 @@ public:
     // puts("find pending queue");
     // exit(0);
 
-    // TODO:
-    my::sort(pending_queue);
+    sort(pending_queue);
     for (int ticket_pos : pending_queue) {
       Ticket ticket;
       ticket_data.read(ticket, ticket_pos);

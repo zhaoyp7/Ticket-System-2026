@@ -22,7 +22,6 @@ add_executable(code
     
     src/MemoryRiver.hpp
     src/command.hpp
-    src/my_sort.hpp
     src/BPT.hpp
     src/utils.hpp
     src/User.hpp

@@ -34,10 +34,9 @@ class UserSystem {
 friend class TicketSystem;
 private:
   int count = 0;
-  BPT<long long, int> user_data_pos;
   MemoryRiver<User> user_data;
+  BPT<long long, int> user_data_pos;
   sjtu::map<long long, int> login_stack;
-  
 
 public:
   UserSystem() : user_data_pos("UserDataPos") {

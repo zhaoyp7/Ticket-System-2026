@@ -3,7 +3,6 @@
 #include "BPT.hpp"
 #include "MemoryRiver.hpp"
 #include "map/src/map.hpp"
-#include "my_sort.hpp"
 #include "utils.hpp"
 #include "vector/src/vector.hpp"
 #include <cstring>
@@ -140,19 +139,17 @@ struct Train {
 class TrainSystem {
 friend class TicketSystem;
 private:
-  int count = 0;
+  MemoryRiver<Train> train_data;
   BPT<long long, int> train_data_pos;
   BPT<long long, int> route_pos;
   BPT<long long, int> station_pos;
-  MemoryRiver<Train> train_data;
 
 public:
   TrainSystem() : train_data_pos("TrainDataPos"), 
                   route_pos("RoutePos"), station_pos("StationPos") {
     train_data.initialise("TrainData");
-    train_data.get_info(count, 1);
   }
-  ~TrainSystem() { train_data.write_info(count, 1); }
+  ~TrainSystem() = default;
   int add_train(const std::string &id, int sta_num, int seat_num,
                 const std::string &station, const std::string &price,
                 const std::string &st_time, const std::string &travel_time,
@@ -163,7 +160,6 @@ public:
     if (!tmp.empty()) {
       return -1;
     }
-    count++;
     Train train(id, sta_num, seat_num, station, price, st_time, travel_time,
                 stop_time, sale_date, ty);
     int new_train_pos = train_data.write(train);
@@ -184,7 +180,6 @@ public:
     }
     train_data_pos.remove(train_hash, train_pos);
     train_data.Delete(train_pos);
-    count--;
     return 0;
   }
   int release_train(const std::string &id) {
@@ -309,7 +304,7 @@ public:
 
       ans.push_back(tic);
     }
-    my::sort(ans);
+    sort(ans);
     std::cout << ans.size() << '\n';
     for (route tic : ans) {
       std::cout << tic.id << ' ' << st << ' '
@@ -446,7 +441,6 @@ public:
     }
   }
   void clean() {
-    count = 0;
     train_data_pos.clean();
     route_pos.clean();
     station_pos.clean();
